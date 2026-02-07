@@ -210,12 +210,14 @@ export async function extractTextFromFile(
     case "text/markdown":
       return await file.text();
 
-    case "application/pdf":
-      // PDF extraction would require a library like pdf-parse
-      // For now, throw an error - implement when needed
-      throw new Error(
-        "PDF extraction not yet implemented. Please convert to text."
-      );
+    case "application/pdf": {
+      const { PDFParse } = await import("pdf-parse");
+      const buffer = await file.arrayBuffer();
+      const parser = new PDFParse({ data: buffer });
+      const result = await parser.getText();
+      await parser.destroy();
+      return result.text;
+    }
 
     case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
       // DOCX extraction would require a library like mammoth

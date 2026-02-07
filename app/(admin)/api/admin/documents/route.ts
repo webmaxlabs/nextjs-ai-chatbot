@@ -3,7 +3,7 @@ import { z } from "zod";
 import { auth } from "@/app/(auth)/auth";
 import { requireAdmin, logAdminAction } from "@/lib/admin/auth";
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { processDocument } from "@/lib/rag/processor";
+import { processDocument, extractTextFromFile } from "@/lib/rag/processor";
 import {
   DocumentUploadSchema,
   DocumentUpdateSchema,
@@ -71,23 +71,79 @@ export async function GET(request: Request) {
 
 /**
  * POST /api/admin/documents
- * Create a new document
+ * Create a new document (supports JSON body or FormData file upload)
  */
 export async function POST(request: Request) {
   try {
     const session = await auth();
     const admin = await requireAdmin(session);
 
-    const body = await request.json();
-    const validated = DocumentUploadSchema.parse(body);
+    const contentType = request.headers.get("content-type") || "";
+
+    let title: string;
+    let content: string;
+    let sourceType: "upload" | "url" | "manual" = "upload";
+    let sourceUrl: string | undefined;
+    let collectionId: string | undefined;
+    let mimeType: string | undefined;
+
+    if (contentType.includes("multipart/form-data")) {
+      // Handle file upload (PDF, TXT, MD)
+      const formData = await request.formData();
+      const file = formData.get("file") as File | null;
+
+      if (!file) {
+        return NextResponse.json(
+          { error: "No file provided" },
+          { status: 400 }
+        );
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        return NextResponse.json(
+          { error: "File size must be less than 10MB" },
+          { status: 400 }
+        );
+      }
+
+      const allowedTypes = ["application/pdf", "text/plain", "text/markdown"];
+      if (!allowedTypes.includes(file.type)) {
+        return NextResponse.json(
+          { error: "Unsupported file type. Allowed: PDF, TXT, MD" },
+          { status: 400 }
+        );
+      }
+
+      title =
+        (formData.get("title") as string) ||
+        file.name.replace(/\.[^/.]+$/, "");
+      collectionId =
+        (formData.get("collectionId") as string) || undefined;
+      mimeType = file.type;
+      sourceType = "upload";
+
+      // Extract text from file (server-side PDF parsing)
+      content = await extractTextFromFile(file, file.type);
+    } else {
+      // Handle JSON (existing flow)
+      const body = await request.json();
+      const validated = DocumentUploadSchema.parse(body);
+
+      title = validated.title;
+      content = validated.content;
+      sourceType = validated.sourceType;
+      sourceUrl = validated.sourceUrl || undefined;
+      collectionId = validated.collectionId || undefined;
+    }
 
     // Process document (chunk + embed)
     const chunks = await processDocument({
-      title: validated.title,
-      content: validated.content,
-      sourceType: validated.sourceType,
-      sourceUrl: validated.sourceUrl || undefined,
-      collectionId: validated.collectionId || undefined,
+      title,
+      content,
+      sourceType,
+      sourceUrl,
+      collectionId,
+      mimeType,
       createdBy: admin.id,
     });
 
@@ -112,7 +168,7 @@ export async function POST(request: Request) {
       data[0].id,
       "document",
       {
-        title: validated.title,
+        title,
         chunks_created: chunks.length,
       }
     );
