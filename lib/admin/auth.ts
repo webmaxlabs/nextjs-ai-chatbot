@@ -32,7 +32,8 @@ export async function verifyAdminAccess(
         .from("admin_users")
         .select("*")
         .eq("user_id", session.user.id)
-        .single();
+        .limit(1)
+        .maybeSingle();
 
       if (adminById) {
         return adminById;
@@ -45,7 +46,8 @@ export async function verifyAdminAccess(
         .from("admin_users")
         .select("*")
         .eq("email", session.user.email)
-        .single();
+        .limit(1)
+        .maybeSingle();
 
       if (adminByEmail) {
         return adminByEmail;
