@@ -2,7 +2,19 @@ import { auth } from "@/app/(auth)/auth";
 import { verifyAdminAccess } from "@/lib/admin/auth";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
-async function getStats() {
+interface AuditLogEntry {
+  id: string;
+  event_type: string;
+  user_type: string;
+  resource_type: string | null;
+  timestamp: string;
+}
+
+async function getStats(): Promise<{
+  documentCount: number;
+  collectionCount: number;
+  recentActivity: AuditLogEntry[];
+}> {
   const [documentsResult, collectionsResult, recentActivityResult] =
     await Promise.all([
       supabaseAdmin
@@ -16,7 +28,7 @@ async function getStats() {
         .eq("is_active", true),
       supabaseAdmin
         .from("rag_audit_log")
-        .select("*")
+        .select("id, event_type, user_type, resource_type, timestamp")
         .order("timestamp", { ascending: false })
         .limit(5),
     ]);
@@ -24,7 +36,7 @@ async function getStats() {
   return {
     documentCount: documentsResult.count || 0,
     collectionCount: collectionsResult.count || 0,
-    recentActivity: recentActivityResult.data || [],
+    recentActivity: (recentActivityResult.data as AuditLogEntry[]) || [],
   };
 }
 
