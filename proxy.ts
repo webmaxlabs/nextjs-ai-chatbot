@@ -19,11 +19,11 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
   // Content Security Policy
   const cspHeader = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Required for Next.js
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net", // Required for Next.js + pyodide
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' blob: data: https://*.supabase.co https://avatar.vercel.sh",
+    "img-src 'self' blob: data: https://*.supabase.co https://avatar.vercel.sh https://models.dev",
     "font-src 'self'",
-    "connect-src 'self' https://*.supabase.co https://api.openai.com https://openrouter.ai wss://*.supabase.co",
+    "connect-src 'self' https://*.supabase.co https://api.openai.com https://openrouter.ai wss://*.supabase.co https://cdn.jsdelivr.net",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",

@@ -16,26 +16,43 @@ export interface AdminSession {
 /**
  * Verify if a user has admin access
  * Returns the admin record if found, null otherwise
+ * Checks by user_id first, then falls back to email
  */
 export async function verifyAdminAccess(
   session: Session | null
 ): Promise<AdminUser | null> {
-  if (!session?.user?.id) {
+  if (!session?.user) {
     return null;
   }
 
   try {
-    const { data: admin, error } = await supabaseAdmin
-      .from("admin_users")
-      .select("*")
-      .eq("user_id", session.user.id)
-      .single();
+    // First try to find by user_id
+    if (session.user.id) {
+      const { data: adminById } = await supabaseAdmin
+        .from("admin_users")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .single();
 
-    if (error || !admin) {
-      return null;
+      if (adminById) {
+        return adminById;
+      }
     }
 
-    return admin;
+    // Fallback: find by email (for cases where user_id is null in admin_users)
+    if (session.user.email) {
+      const { data: adminByEmail } = await supabaseAdmin
+        .from("admin_users")
+        .select("*")
+        .eq("email", session.user.email)
+        .single();
+
+      if (adminByEmail) {
+        return adminByEmail;
+      }
+    }
+
+    return null;
   } catch (error) {
     console.error("Error verifying admin access:", error);
     return null;
