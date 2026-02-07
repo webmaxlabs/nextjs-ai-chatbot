@@ -146,8 +146,8 @@ export async function POST(request: Request) {
     let ragContext: RetrievedDocument[] = [];
     if (message?.role === "user" && message.parts) {
       const userQuery = message.parts
-        .filter((part: { type: string }) => part.type === "text")
-        .map((part: { text?: string }) => part.text || "")
+        .filter((part): part is { type: "text"; text: string } => part.type === "text")
+        .map((part) => part.text)
         .join(" ")
         .trim();
 

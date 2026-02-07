@@ -73,7 +73,14 @@ export async function retrieveRelevantDocuments(
     }).catch(console.error);
 
     // Transform results
-    return (data || []).map((doc) => ({
+    interface MatchedDoc {
+      id: string;
+      title: string;
+      content: string;
+      similarity: number;
+      collection_id: string | null;
+    }
+    return (data || []).map((doc: MatchedDoc) => ({
       id: doc.id,
       title: doc.title,
       content: doc.content,

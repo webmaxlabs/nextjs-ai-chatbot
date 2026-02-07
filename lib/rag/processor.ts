@@ -144,7 +144,7 @@ function chunkText(
     start = end - overlap;
 
     // Ensure we're making progress
-    if (start <= chunks.length > 0 ? end - chunkSize : 0) {
+    if (chunks.length > 0 && start <= end - chunkSize) {
       start = end;
     }
   }

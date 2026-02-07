@@ -1,8 +1,18 @@
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { auth } from "@/app/(auth)/auth";
 import { verifyAdminAccess } from "@/lib/admin/auth";
 
-export default async function AdminLayout({
+// Loading component for admin
+function AdminLoading() {
+  return (
+    <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="text-zinc-400">Loading admin panel...</div>
+    </div>
+  );
+}
+
+async function AdminLayoutContent({
   children,
 }: {
   children: React.ReactNode;
@@ -70,5 +80,17 @@ export default async function AdminLayout({
         {children}
       </main>
     </div>
+  );
+}
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <Suspense fallback={<AdminLoading />}>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </Suspense>
   );
 }

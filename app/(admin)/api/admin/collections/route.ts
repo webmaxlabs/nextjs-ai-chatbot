@@ -41,7 +41,7 @@ export async function GET(request: Request) {
 
     // Get document counts for each collection
     const collectionsWithCounts = await Promise.all(
-      (data || []).map(async (collection) => {
+      (data || []).map(async (collection: { id: string }) => {
         const { count } = await supabaseAdmin
           .from("rag_documents")
           .select("*", { count: "exact", head: true })
