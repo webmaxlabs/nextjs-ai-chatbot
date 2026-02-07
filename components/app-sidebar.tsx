@@ -71,8 +71,8 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   setOpenMobile(false);
                 }}
               >
-                <span className="cursor-pointer rounded-md px-2 font-semibold text-lg hover:bg-muted">
-                  Chatbot
+                <span className="cursor-pointer rounded-md px-2 font-heading font-bold text-lg tracking-tight hover:bg-muted">
+                  <span className="neon-text-gradient">NEXUS</span>
                 </span>
               </Link>
               <div className="flex flex-row gap-1">

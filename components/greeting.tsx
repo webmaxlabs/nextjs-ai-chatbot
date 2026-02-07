@@ -8,21 +8,22 @@ export const Greeting = () => {
     >
       <motion.div
         animate={{ opacity: 1, y: 0 }}
-        className="font-semibold text-xl md:text-2xl"
+        className="font-heading font-bold text-3xl tracking-tight md:text-5xl"
         exit={{ opacity: 0, y: 10 }}
         initial={{ opacity: 0, y: 10 }}
-        transition={{ delay: 0.5 }}
+        transition={{ delay: 0.4 }}
       >
-        Hello there!
+        <span className="neon-text-gradient">READY</span>
+        <span className="animate-[cursor-blink_1s_steps(1)_infinite] text-neon-lime">_</span>
       </motion.div>
       <motion.div
         animate={{ opacity: 1, y: 0 }}
-        className="text-xl text-zinc-500 md:text-2xl"
+        className="mt-2 font-heading text-lg text-muted-foreground md:text-xl"
         exit={{ opacity: 0, y: 10 }}
         initial={{ opacity: 0, y: 10 }}
-        transition={{ delay: 0.6 }}
+        transition={{ delay: 0.55 }}
       >
-        How can I help you today?
+        What's on your mind?
       </motion.div>
     </div>
   );
